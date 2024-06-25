@@ -5,11 +5,14 @@
 //  Created by Nowroz Islam on 22/6/24.
 //
 
+import SwiftData
 import SwiftUI
 
 struct UserDetailView: View {
     @Environment(\.pathState) private var pathState
-    @Environment(\.userList) private var userList
+    
+    @Query private var users: [User]
+    
     var user: User
     
     var body: some View {
@@ -36,7 +39,7 @@ struct UserDetailView: View {
             Section("Friends") {
                 ForEach(user.friends) { friend in
                     let connectedUser = getUser(friend.id)
-                    return NavigationLink(value: connectedUser) {
+                    return NavigationLink(value: connectedUser){
                         HStack {
                             Text(connectedUser.name)
                             
@@ -75,31 +78,25 @@ struct UserDetailView: View {
     }
     
     func getUser(_ id: String) -> User {
-        if let user = userList.userDictionary[id] {
-            user
-        } else {
-            fatalError("Could not find user having the id - \(id)")
+        guard let user = users.first(where: { $0.id == id }) else {
+            fatalError("No user matched the id - \(id)")
         }
+        
+        return user
     }
 }
 
 #Preview {
     struct PreviewUserDetailView: View {
-        @State private var user: User = User(id: "", isActive: false, name: "", age: 0, company: "", email: "", address: "", registered: .now, friends: [])
+        @Query private var users: [User]
         
         var body: some View {
-            UserDetailView(user: user)
-                .navigationDestination(for: User.self) { user in
-                    UserDetailView(user: user)
-                }
-                .task {
-                    let allUsers: [User] = await DataLoader.load(from: "https://www.hackingwithswift.com/samples/friendface.json")
-                    user = allUsers[0]
-                }
+            UserDetailView(user: users[0])
         }
     }
     
     return NavigationStack {
         PreviewUserDetailView()
+            .modelContainer(previewContainer)
     }
 }
