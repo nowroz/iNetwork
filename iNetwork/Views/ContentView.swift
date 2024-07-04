@@ -9,47 +9,38 @@ import SwiftData
 import SwiftUI
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
     @Environment(\.pathState) private var pathState
     
-    @Query(sort: [
+    @State private var sortOrder: [SortDescriptor] = [
         SortDescriptor(\User.name),
         SortDescriptor(\User.company),
         SortDescriptor(\User.registered)
-    ]) private var users: [User]
+    ]
     
     var body: some View {
         @Bindable var pathState = pathState
         NavigationStack(path: $pathState.path) {
-            List(users) { user in
-                NavigationLink(value: user){
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(user.name)
-                                .font(.headline)
-                            Text(user.company)
-                                .font(.subheadline)
+            UserListView(sortOrder: sortOrder)
+                .navigationTitle("iNetwork")
+                .toolbar {
+                    Menu {
+                        Picker("Sort", selection: $sortOrder) {
+                            Text("Sort by name").tag([
+                                SortDescriptor(\User.name),
+                                SortDescriptor(\User.company),
+                                SortDescriptor(\User.registered)
+                            ])
+                            
+                            Text("Sort by company").tag([
+                                SortDescriptor(\User.company),
+                                SortDescriptor(\User.name),
+                                SortDescriptor(\User.registered)
+                            ])
                         }
-                        
-                        Spacer()
-                        
-                        Image(systemName: "circle.fill")
-                            .font(.caption2)
-                            .foregroundStyle(user.isActive ? .green : .red)
+                    } label: {
+                        Label("Sort", systemImage: "arrow.up.arrow.down")
                     }
                 }
-            }
-            .navigationTitle("iNetwork")
-            .navigationDestination(for: User.self) { user in
-                UserDetailView(user: user)
-            }
-            .task {
-                if users.isEmpty {
-                    print("users is empty")
-                    let users: [User] = await DataLoader.load(from: "https://www.hackingwithswift.com/samples/friendface.json")
-                    users.forEach{ modelContext.insert($0) }
-                }
-            }
         }
     }
 }
