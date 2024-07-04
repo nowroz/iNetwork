@@ -12,9 +12,8 @@ The feature/swift-data branch uses SwiftData to persist fetched data.
 - Programmatic Navigation
 - URLSession
 ## App Preview
-This demo features the feature/swift-data branch
+This demo features the feature/swift-data branch.
 *Please wait for the demo GIF to load*
-
 <p align="center">
   <img src="GIF/demo.gif" width="200">
 </p>
